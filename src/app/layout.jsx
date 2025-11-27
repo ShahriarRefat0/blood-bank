@@ -17,13 +17,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
-  title: "Blood-Bank",
-  description: "Created by Shahriar Refat",
-  openGraph: {
-    images: ["/logo.png"], // <<< ONLY THIS LINE YOU NEED
-  },
-};
+
 
 export default function RootLayout({ children }) {
   return (
