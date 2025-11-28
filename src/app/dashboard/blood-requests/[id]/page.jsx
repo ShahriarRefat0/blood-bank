@@ -30,7 +30,10 @@ export default async function RequestDetails({ params }) {
                 URGENT
               </span>
               <p className="mt-2 text-3xl font-extrabold">Blood Request</p>
-              {/* <p className="text-sm opacity-80">Posted {req.createdAt}</p> */}
+
+              <p className="text-xs opacity-80">
+                Posted {new Date(req.createdAt).toLocaleString()}
+              </p>
             </div>
 
             <div className="text-right bg-[#ffffff35] border border-white p-2 rounded-xl">
@@ -60,9 +63,7 @@ export default async function RequestDetails({ params }) {
               <PiBuildingApartmentBold className="text-2xl text-red-500" />
               <div>
                 <p className="text-xs text-gray-500">HOSPITAL</p>
-                <p className="font-bold text-gray-700">
-                  City General Hospital, Ward 404
-                </p>
+                <p className="font-bold text-gray-700">{req.hospitalName}</p>
               </div>
             </div>
           </div>

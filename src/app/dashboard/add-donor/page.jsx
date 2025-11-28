@@ -7,6 +7,8 @@ import { MdBloodtype } from "react-icons/md";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "../../../../public/Components/LoadingSpinner";
+import Swal from "sweetalert2";
+import { icon } from "leaflet";
 
 export default function DonorInfo() {
   const [error, setError] = useState("");
@@ -47,11 +49,21 @@ export default function DonorInfo() {
       });
 
       if (response.data.success) {
-        alert("Donor Registered Successfully!");
+        Swal.fire({
+          title: "Submitted",
+          icon: "success",
+          text: "Donor Registered Successfully!",
+          draggable: true,
+        });
         router.push("/");
       }
     } catch (e) {
-      console.log("error submitting donor form", e);
+      //console.log("error submitting donor form", e);
+          Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: "Something went wrong!",
+            });
     }
   };
 
@@ -116,7 +128,7 @@ if (loading) {
             )}
           </div>
 
-          {/* Blood Group + Last Donation Date */}
+      
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="font-semibold text-sm">Blood Group</label>

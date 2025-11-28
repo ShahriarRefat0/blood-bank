@@ -5,7 +5,7 @@ import { ObjectId } from "mongodb";
 
 export async function DELETE(req, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const client = await clientPromise;
     const db = client.db("blood-bankDB");

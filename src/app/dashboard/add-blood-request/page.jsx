@@ -7,10 +7,11 @@ import { MdBloodtype } from "react-icons/md";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "../../../../public/Components/LoadingSpinner";
+import Swal from "sweetalert2";
 
 export default function AddBloodRequest() {
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const {
     register,
@@ -39,28 +40,36 @@ export default function AddBloodRequest() {
     areas.find((a) => a.region === userDivision && a.district === userDistrict)
       ?.covered_area || [];
 
-  const handleReq = async (formData) => {
+  const handleReq = async (data) => {
     try {
-      const response = await axios.post("/api/blood-request", {
-        data: formData,
-      });
+      const response = await axios.post("/api/blood-request", data);
       if (response.data.success) {
-        alert("Blood request submitted successfully!");
+        Swal.fire({
+          title: "Submitted",
+          icon: "success",
+          text: "Blood request submitted successfully",
+        
+        });
         router.push("/");
       }
     } catch (e) {
-      console.log("error submite boold reque", e);
+      // console.log("error submite boold reque", e);
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Something went wrong!",
+      });
     }
   };
 
   useEffect(() => {
-    const timer = setTimeout(()=> setLoading(false), 1000)
-  return ()=> clearTimeout(timer)
-  }, [])
+    const timer = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
-if (loading) {
-  return <LoadingSpinner></LoadingSpinner>
-}
+  if (loading) {
+    return <LoadingSpinner></LoadingSpinner>;
+  }
 
   return (
     <div className="min-h-screen bg-red-50 flex justify-center items-center px-4 py-10">
@@ -134,8 +143,23 @@ if (loading) {
               )}
             </div>
           </div>
+          <div>
+            <label className="font-semibold text-sm">Hospital Name</label>
+            <input
+              type="text"
+              {...register("hospitalName", {
+                required: "Hospital name is required",
+              })}
+              className="input input-bordered w-full mt-1"
+              placeholder="Enter hospital name"
+            />
+            {errors.hospitalName && (
+              <p className="text-red-500 text-xs">
+                {errors.hospitalName.message}
+              </p>
+            )}
+          </div>
 
-      
           <div>
             <label className="font-semibold text-sm">When Needed?</label>
             <input
@@ -148,7 +172,6 @@ if (loading) {
             )}
           </div>
 
-        
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="font-semibold text-sm">Division</label>
@@ -195,7 +218,6 @@ if (loading) {
             </div>
           </div>
 
- 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="font-semibold text-sm">Upazila</label>
@@ -238,7 +260,6 @@ if (loading) {
             </div>
           </div>
 
- 
           <div>
             <label className="font-semibold text-sm">Notes</label>
             <textarea
@@ -249,7 +270,6 @@ if (loading) {
             ></textarea>
           </div>
 
-     
           <button
             type="submit"
             className="btn bg-red-600 hover:bg-red-700 text-white w-full text-lg py-2 rounded-lg"

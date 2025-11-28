@@ -9,13 +9,13 @@ import { MdBloodtype, MdLocationOn } from "react-icons/md";
 export default function DonorCard({ donor }) {
   return (
     <Link href={`/dashboard/donors/${donor._id}`}>
-      <div className="w-full max-w-md bg-white shadow-lg hover:shadow-xl rounded-xl p-4 sm:p-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 border-2 border-red-500 transition-all duration-300 hover:border-red-600 hover:-translate-y-1 cursor-pointer">
+      <div className="w-full max-w-md bg-white shadow-lg hover:shadow-xl rounded-xl p-5  flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 border-2 border-red-500 transition-all duration-300 hover:border-red-600 hover:-translate-y-1 cursor-pointer">
         {/* Profile Photo */}
         <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 bg-gradient-to-br from-red-50 to-rose-100 flex items-center justify-center border-4 border-red-500 rounded-full shadow-md">
-          {donor.photoURL ? (
+          {donor?.photoURL ? (
             <Image
-              src={donor.photoURL}
-              alt={donor.donorName}
+              src={donor?.photoURL?.trim() || " "}
+              alt={donor?.donorName || "Donor"}
               width={120}
               height={120}
               className="object-cover rounded-full"
@@ -49,7 +49,7 @@ export default function DonorCard({ donor }) {
             </span>
           </div>
 
-          {/* Location */}
+      
           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
             <span className="font-bold text-gray-700 text-sm uppercase tracking-wide flex items-center justify-center sm:justify-start gap-1">
               <MdLocationOn className="text-red-500" size={18} />

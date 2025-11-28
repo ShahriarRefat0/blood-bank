@@ -6,6 +6,7 @@ import Link from "next/link";
 import { MdDelete, MdVisibility } from "react-icons/md";
 import Swal from "sweetalert2";
 import { useAuth } from "@/context/AuthContext";
+import LoadingSpinner from "../../../../public/Components/LoadingSpinner";
 
 export default function ManageRequests() {
   const [requests, setRequests] = useState([]);
@@ -14,62 +15,64 @@ export default function ManageRequests() {
   const { user } = useAuth();
 
   useEffect(() => {
+    if (!user?.email) return;
+
     axios
-      .get(`/api/blood-request?user=${user?.email}`)
+      .get(`/api/blood-request?user=${user.email}`)
       .then((res) => {
         setRequests(res.data?.requests || []);
       })
       .catch((err) => console.log("Fetch error", err))
       .finally(() => setLoading(false));
-  }, []);
+  }, [user]);
 
-  // Delete request handler
-  const handleDelete = async (id) => {
-    try {
-      const res = await axios.delete(`/api/blood-request/${id}`);
-      Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, delete it!",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          if (res.data.success) {
-            setRequests(requests.filter((r) => r._id !== id));
-            Swal.fire({
-              title: "Deleted!",
-              text: "Your request has been deleted.",
-              icon: "success",
-            });
-          }
-        }
-      });
-    } catch (e) {
-      console.log("Delete error:", e);
+const handleDelete = async (id) => {
+  // Step 1: Confirm first
+  const confirm = await Swal.fire({
+    title: "Are you sure?",
+    text: "You won't be able to revert this!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#6e7881",
+    confirmButtonText: "Yes, delete it!",
+  });
+
+  if (!confirm.isConfirmed) return; // cancelled
+
+  try {
+    // Step 2: Now call API
+    const res = await axios.delete(`/api/blood-request/${id}`);
+
+    console.log("Delete response:", res.data);
+
+    if (res.data.success) {
+      // Step 3: Remove from UI using functional state update
+      setRequests((prev) => prev.filter((r) => r._id !== id));
+
+      Swal.fire("Deleted!", "Your request has been deleted.", "success");
+    } else {
+      Swal.fire("Failed!", "Could not delete the request.", "error");
     }
-  };
+  } catch (e) {
+    console.log("Delete error:", e);
+    Swal.fire("Error!", "Something went wrong.", "error");
+  }
+};
 
-  if (loading)
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-600 text-xl font-bold">
-          Loading your requests...
-        </p>
-      </div>
-    );
+
+
+  if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="min-h-screen bg-red-50 px-6 py-10">
-      <h1 className="text-3xl md:text-4xl font-bold text-red-600 mb-6 text-center">
+    <div className="w-11/12 mx-auto min-h-screen py-10">
+      <h1 className="text-3xl md:text-4xl font-bold text-red-600 mb-10 text-center">
         Manage Your Blood Requests
       </h1>
 
       {/* Desktop Table */}
-      <div className="hidden md:block overflow-x-auto">
-        <table className="w-full bg-white shadow-lg rounded-xl border border-red-200">
+      <div className="hidden md:block overflow-x-auto shadow-lg rounded-xl border border-red-200">
+        <table className="w-full bg-white rounded-xl overflow-hidden">
           <thead className="bg-red-600 text-white">
             <tr>
               <th className="py-3 px-4 text-left">Patient</th>
@@ -82,30 +85,35 @@ export default function ManageRequests() {
 
           <tbody>
             {requests.map((req) => (
-              <tr key={req._id} className="border-b">
+              <tr key={req._id} className="border-b hover:bg-red-50 transition">
                 <td className="py-3 px-4">{req.patientName}</td>
+
                 <td className="py-3 px-4 font-bold text-red-600">
                   {req.bloodGroup}
                 </td>
+
                 <td className="py-3 px-4">
                   {req.userDistrict}, {req.userDivision}
                 </td>
+
                 <td className="py-3 px-4">{req.date}</td>
 
-                <td className="py-3 px-4 text-center flex gap-3 justify-center">
-                  <Link
-                    href={`/dashboard/blood-requests/${req._id}`}
-                    className=" hover:underline flex items-center gap-1"
-                  >
-                    <MdVisibility /> View
-                  </Link>
+                <td className="py-3 px-4 text-center">
+                  <div className="flex items-center justify-center gap-4">
+                    <Link
+                      href={`/dashboard/blood-requests/${req._id}`}
+                      className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                    >
+                      <MdVisibility size={20} /> View
+                    </Link>
 
-                  <button
-                    onClick={() => handleDelete(req._id)}
-                    className="text-red-600 hover:underline flex items-center gap-1"
-                  >
-                    <MdDelete /> Delete
-                  </button>
+                    <button
+                      onClick={() => handleDelete(req._id)}
+                      className="text-red-600 hover:text-red-800 flex items-center gap-1"
+                    >
+                      <MdDelete size={20} /> Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -114,7 +122,7 @@ export default function ManageRequests() {
       </div>
 
       {/* Mobile Cards */}
-      <div className="grid md:hidden grid-cols-1 gap-6 mt-6">
+      <div className="grid  md:hidden grid-cols-1 gap-6 mt-6">
         {requests.map((req) => (
           <div
             key={req._id}
@@ -124,26 +132,30 @@ export default function ManageRequests() {
               {req.patientName}
             </h2>
 
-            <p className="text-gray-600 mt-1">
-              Blood: <strong>{req.bloodGroup}</strong>
+            <p className="text-gray-700 mt-2">
+              <span className="font-medium">Blood Group:</span> {req.bloodGroup}
             </p>
-            <p className="text-gray-600">
-              Location: {req.userCity}, {req.userDistrict}
-            </p>
-            <p className="text-gray-600">Needed: {req.date}</p>
 
-            {/* Action Buttons */}
-            <div className="flex gap-4 mt-4">
+            <p className="text-gray-700">
+              <span className="font-medium">Location:</span> {req.userCity},{" "}
+              {req.userDistrict}
+            </p>
+
+            <p className="text-gray-700">
+              <span className="font-medium">Needed On:</span> {req.date}
+            </p>
+
+            <div className="flex gap-4 mt-5">
               <Link
                 href={`/dashboard/blood-requests/${req._id}`}
-                className="bg-gray-200 text-black px-4 py-2 rounded-lg flex items-center gap-1"
+                className="w-1/2 bg-gray-200 text-black py-2 rounded-lg flex items-center justify-center gap-1 font-medium"
               >
                 <MdVisibility /> View
               </Link>
 
               <button
                 onClick={() => handleDelete(req._id)}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-1"
+                className="w-1/2 bg-red-600 text-white py-2 rounded-lg flex items-center justify-center gap-1 font-medium"
               >
                 <MdDelete /> Delete
               </button>
